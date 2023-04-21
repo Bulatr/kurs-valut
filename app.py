@@ -40,7 +40,7 @@ def convert_text(message: telebot.types.Message,):
     except Exception as e:
         bot.reply_to(message, f"Не удалось обработать команду \n{e}")
     else:
-        text = f"Цена {amount} {base} в {quote}: {result} {quote}"
+        text = f"Цена {amount} {base.lower()} в {quote.lower()}: {result} {quote.lower()}"
         bot.reply_to(message, text)
 
 

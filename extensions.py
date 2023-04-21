@@ -20,6 +20,9 @@ class ConvertedValute:
     @staticmethod
     def get_price(fixer_to: str, fixer_from: str, amount: float)-> float:
 
+        fixer_to = fixer_to.lower()
+        fixer_from = fixer_from.lower()
+
         try:
             amount = float(amount)
         except ValueError:
