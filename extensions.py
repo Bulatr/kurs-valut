@@ -1,7 +1,7 @@
 """Классы
 
     Raises:
-        class ConvertException: Пользовательские исключения
+        class APIException: Пользовательские исключения
 
     Returns:
         class ConvertedValute: возвращает float или False
@@ -11,32 +11,32 @@ import requests
 from config import keys, TOKEN_API_LAYER
 
 # Исключения
-class ConvertException(Exception):
+class APIException(Exception):
     pass
 
 # ApiLayer
 # Функция которая отправляет и получает данные с апи
 class ConvertedValute:
     @staticmethod
-    def fixer(fixer_to: str, fixer_from: str, amount: float)-> float:
+    def get_price(fixer_to: str, fixer_from: str, amount: float)-> float:
 
         try:
             amount = float(amount)
         except ValueError:
-            raise ConvertException(f"Не удалось обработать количество {amount}")
+            raise APIException(f"Не удалось обработать количество {amount}")
 
         try:
             key_fixer_to = keys[fixer_to]
         except KeyError:
-            raise ConvertException(f"Не удалось обработать валюту {fixer_to}")
+            raise APIException(f"Не удалось обработать валюту {fixer_to}")
 
         try:
             key_fixer_from = keys[fixer_from]
         except KeyError:
-            raise ConvertException(f"Не удалось обработать валюту {fixer_from}")
+            raise APIException(f"Не удалось обработать валюту {fixer_from}")
 
         if key_fixer_to ==  key_fixer_from:
-            raise ConvertException(f"Одинаковые параметры {fixer_to} и {fixer_from}")
+            raise APIException(f"Одинаковые параметры {fixer_to} и {fixer_from}")
 
 
         payload = {}
@@ -60,7 +60,7 @@ class ConvertedValute:
     def count_values(values: list)-> None:
         '''Проверка количества параметров'''
         if len(values) > 3:
-            raise ConvertException("Слишком много параметров")
+            raise APIException("Слишком много параметров")
 
         if len(values) < 3:
-            raise ConvertException("Слишком мало параметров")
+            raise APIException("Слишком мало параметров")

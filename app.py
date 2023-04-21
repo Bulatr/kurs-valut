@@ -3,7 +3,7 @@
 '''
 import telebot
 from config import TOKEN, keys
-from utils import ConvertException, ConvertedValute
+from extensions import APIException, ConvertedValute
 
 bot = telebot.TeleBot(TOKEN) # Вот мозги мне проело, нужно писать TeleBot а не Telebot
 
@@ -33,14 +33,14 @@ def convert_text(message: telebot.types.Message,):
     try:
         values = message.text.split(" ")
         ConvertedValute.count_values(values)
-        fixer_to, fixer_from, amount = values
-        result = ConvertedValute.fixer(fixer_from, fixer_to, amount)
-    except ConvertException as e:
+        base, quote, amount = values
+        result = ConvertedValute.get_price(quote, base, amount)
+    except APIException as e:
         bot.reply_to(message, f"Ошибка пользователя \n{e}")
     except Exception as e:
         bot.reply_to(message, f"Не удалось обработать команду \n{e}")
     else:
-        text = f"Цена {amount} {fixer_to} в {fixer_from}: {result} {fixer_from}"
+        text = f"Цена {amount} {base} в {quote}: {result} {quote}"
         bot.reply_to(message, text)
 
 
