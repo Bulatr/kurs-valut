@@ -1,80 +1,13 @@
 '''
 Основной модуль
 '''
-import json
-import requests
 import telebot
+from config import TOKEN, keys
+from utils import ConvertException, ConvertedValute
 
-
-
-TOKEN = "6084243976:AAH15Er4IvKQR17isVotjka8692lq8J5Fu8"
 bot = telebot.TeleBot(TOKEN) # Вот мозги мне проело, нужно писать TeleBot а не Telebot
 
-keys = {
-    "рубль": "RUB",
-    "доллар": "USD",
-    "евро": "EUR",
-    "юань": "CNY"
-}
-
-# Исключения
-class ConvertException(Exception):
-    pass
-
-# ApiLayer
-# Функция которая отправляет и получает данные с апи
-class ConvertedValute:
-    @staticmethod
-    def fixer(fixer_to: str, fixer_from: str, amount: float)-> float:
-
-        TOKEN_API_LAYER = "dZ67KxZN8n2l6mtStwa5f0vXqqq5joIm"
-        try:
-            amount = float(amount)
-        except ValueError:
-            raise ConvertException(f"Не удалось обработать количество {amount}")
-
-        try:
-            key_fixer_to = keys[fixer_to]
-        except KeyError:
-            raise ConvertException(f"Не удалось обработать валюту {fixer_to}")
-
-        try:
-            key_fixer_from = keys[fixer_from]
-        except KeyError:
-            raise ConvertException(f"Не удалось обработать валюту {fixer_from}")
-
-        if key_fixer_to ==  key_fixer_from:
-            raise ConvertException(f"Одинаковые параметры {fixer_to} и {fixer_from}")
-
-
-        payload = {}
-        url = f"https://api.apilayer.com/fixer/convert?to={key_fixer_to}&from={key_fixer_from}&amount={amount}"
-
-        headers= {
-            "apikey": TOKEN_API_LAYER
-        }
-
-        response = requests.get(url, headers=headers, data = payload)
-
-        status_code = response.status_code
-        if status_code == 200:
-            result = response.json()
-            return result["result"]
-        else :
-            return False
-    
-    @staticmethod
-    def count_values(values: list)-> None:
-        if len(values) > 3:
-            raise ConvertException("Слишком много параметров")
-
-        if len(values) < 3:
-            raise ConvertException("Слишком мало параметров")
-
-# fixer("RUB", "USD", 1)
-
 # Обработка комманд старт и помощь
-
 @bot.message_handler(commands=["start","help"])
 def start_help(message: telebot.types.Message):
     text = "Чтобы начать работу введите команду в следующем формате:\n <имя валюты>\
@@ -86,7 +19,6 @@ def start_help(message: telebot.types.Message):
 
 
 # Список валют
-
 @bot.message_handler(commands=["values"])
 def values(message: telebot.types.Message,):
     text = "Доступные валюты:"
