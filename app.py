@@ -31,7 +31,6 @@ class ConvertedValute:
         try:
             amount = float(amount)
         except ValueError:
-            bot.reply_to(message, "Не удалось обработать количество")
             raise ConvertException(f"Не удалось обработать количество {amount}")
 
         try:
@@ -45,16 +44,8 @@ class ConvertedValute:
             raise ConvertException(f"Не удалось обработать валюту {fixer_from}")
 
         if key_fixer_to ==  key_fixer_from:
-            bot.reply_to(message, "Одинаковые параметры")
-            raise ConvertException("Одинаковые параметры")
+            raise ConvertException(f"Одинаковые параметры {fixer_to} и {fixer_from}")
 
-        if amount == 0 :
-            bot.reply_to(message, "Количество равно 0")
-            raise ConvertException("Количество равно 0")
-
-        if amount < 0 :
-            bot.reply_to(message, "Количество меньше 0")
-            raise ConvertException("Количество меньше 0")
 
         payload = {}
         url = f"https://api.apilayer.com/fixer/convert?to={key_fixer_to}&from={key_fixer_from}&amount={amount}"
@@ -73,13 +64,11 @@ class ConvertedValute:
             return False
     
     @staticmethod
-    def count_values( message: telebot.types.Message ,values: list)-> None:
+    def count_values(values: list)-> None:
         if len(values) > 3:
-            bot.reply_to(message, "Слишком много параметров")
             raise ConvertException("Слишком много параметров")
 
         if len(values) < 3:
-            bot.reply_to(message, "Слишком мало параметров")
             raise ConvertException("Слишком мало параметров")
 
 # fixer("RUB", "USD", 1)
@@ -109,12 +98,18 @@ def values(message: telebot.types.Message,):
 # Обработка сообщений
 @bot.message_handler(content_types=["text"])
 def convert_text(message: telebot.types.Message,):
-    values = message.text.split(" ")
-    ConvertedValute.count_values(message, values)
-    fixer_to, fixer_from, amount = values
-    result = ConvertedValute.fixer(fixer_from, fixer_to, amount)
-    text = f"Цена {amount} {fixer_to} в {fixer_from}: {result} {fixer_from}"
-    bot.reply_to(message, text)
+    try:
+        values = message.text.split(" ")
+        ConvertedValute.count_values(values)
+        fixer_to, fixer_from, amount = values
+        result = ConvertedValute.fixer(fixer_from, fixer_to, amount)
+    except ConvertException as e:
+        bot.reply_to(message, f"Ошибка пользователя \n{e}")
+    except Exception as e:
+        bot.reply_to(message, f"Не удалось обработать команду \n{e}")
+    else:
+        text = f"Цена {amount} {fixer_to} в {fixer_from}: {result} {fixer_from}"
+        bot.reply_to(message, text)
 
 
 bot.polling(none_stop=True)
