@@ -17,27 +17,70 @@ keys = {
     "юань": "CNY"
 }
 
+# Исключения
+class ConvertException(Exception):
+    pass
 
 # ApiLayer
 # Функция которая отправляет и получает данные с апи
+class ConvertedValute:
+    @staticmethod
+    def fixer(fixer_to: str, fixer_from: str, amount: float)-> float:
 
-def fixer(fixer_to: str, fixer_from: str, amount: float):
+        TOKEN_API_LAYER = "dZ67KxZN8n2l6mtStwa5f0vXqqq5joIm"
+        try:
+            amount = float(amount)
+        except ValueError:
+            bot.reply_to(message, "Не удалось обработать количество")
+            raise ConvertException(f"Не удалось обработать количество {amount}")
 
-    TOKEN_API_LAYER = "dZ67KxZN8n2l6mtStwa5f0vXqqq5joIm"
+        try:
+            key_fixer_to = keys[fixer_to]
+        except KeyError:
+            raise ConvertException(f"Не удалось обработать валюту {fixer_to}")
 
-    payload = {}
-    url = f"https://api.apilayer.com/fixer/convert?to={fixer_to}&from={fixer_from}&amount={amount}"
+        try:
+            key_fixer_from = keys[fixer_from]
+        except KeyError:
+            raise ConvertException(f"Не удалось обработать валюту {fixer_from}")
 
-    headers= {
-        "apikey": TOKEN_API_LAYER
-    }
+        if key_fixer_to ==  key_fixer_from:
+            bot.reply_to(message, "Одинаковые параметры")
+            raise ConvertException("Одинаковые параметры")
 
-    response = requests.get(url, headers=headers, data = payload)
+        if amount == 0 :
+            bot.reply_to(message, "Количество равно 0")
+            raise ConvertException("Количество равно 0")
 
-    status_code = response.status_code
-    if status_code == 200:
-        result = response.json()
-        return result["result"]
+        if amount < 0 :
+            bot.reply_to(message, "Количество меньше 0")
+            raise ConvertException("Количество меньше 0")
+
+        payload = {}
+        url = f"https://api.apilayer.com/fixer/convert?to={key_fixer_to}&from={key_fixer_from}&amount={amount}"
+
+        headers= {
+            "apikey": TOKEN_API_LAYER
+        }
+
+        response = requests.get(url, headers=headers, data = payload)
+
+        status_code = response.status_code
+        if status_code == 200:
+            result = response.json()
+            return result["result"]
+        else :
+            return False
+    
+    @staticmethod
+    def count_values( message: telebot.types.Message ,values: list)-> None:
+        if len(values) > 3:
+            bot.reply_to(message, "Слишком много параметров")
+            raise ConvertException("Слишком много параметров")
+
+        if len(values) < 3:
+            bot.reply_to(message, "Слишком мало параметров")
+            raise ConvertException("Слишком мало параметров")
 
 # fixer("RUB", "USD", 1)
 
@@ -66,10 +109,11 @@ def values(message: telebot.types.Message,):
 # Обработка сообщений
 @bot.message_handler(content_types=["text"])
 def convert_text(message: telebot.types.Message,):
-    fixer_to, fixer_from, amount = message.text.split(" ")
-    print(keys[fixer_to], keys[fixer_from], float(amount))
-    result = fixer(keys[fixer_to], keys[fixer_from], float(amount))
-    text = f"Цена {amount} {fixer_to} в {fixer_from}: {result}"
+    values = message.text.split(" ")
+    ConvertedValute.count_values(message, values)
+    fixer_to, fixer_from, amount = values
+    result = ConvertedValute.fixer(fixer_from, fixer_to, amount)
+    text = f"Цена {amount} {fixer_to} в {fixer_from}: {result} {fixer_from}"
     bot.reply_to(message, text)
 
 
