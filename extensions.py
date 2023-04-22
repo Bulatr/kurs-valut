@@ -19,7 +19,19 @@ class APIException(Exception):
 class ConvertedValute:
     @staticmethod
     def get_price(fixer_to: str, fixer_from: str, amount: float)-> float:
+        """Возвращает курс валюты
 
+        Args:
+            fixer_to (str): валюта в которую переводим
+            fixer_from (str): валюта из которой переводим
+            amount (float): сумма
+
+        Raises:
+            APIException: пользовательские расширения
+
+        Returns:
+            float: возвращаем курс доллара типа float
+        """
         fixer_to = fixer_to.lower()
         fixer_from = fixer_from.lower()
 
@@ -61,7 +73,14 @@ class ConvertedValute:
 
     @staticmethod
     def count_values(values: list)-> None:
-        '''Проверка количества параметров'''
+        """Проверка количества параметров
+
+        Args:
+            values (list): список параметров
+
+        Raises:
+            APIException: Пользовательское исключение
+        """
         if len(values) > 3:
             raise APIException("Слишком много параметров")
 
